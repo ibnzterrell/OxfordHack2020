@@ -26,6 +26,8 @@ public class echoARHandler : MonoBehaviour
     // echoAR Database
     static public Database dbObject;
 
+    public string loadModel;
+    public string user;
     void Start()
     {
         // Debug logs control
@@ -48,6 +50,18 @@ public class echoARHandler : MonoBehaviour
         try
         {
             StartCoroutine(QueryDatabase(serverURL));
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    public void setModel(string user, string model)
+    {
+        try
+        {
+            StartCoroutine(SetUserModel(user, model));
         }
         catch (System.Exception e)
         {
@@ -277,6 +291,7 @@ public class echoARHandler : MonoBehaviour
     IEnumerator DownloadAssets(string serverURL)
     {
         Debug.Log("Downloading assets...");
+        StartCoroutine(GetUserModel(user));
 
         // Iterate over all database entries
         foreach (Entry entry in dbObject.getEntries())
@@ -299,36 +314,89 @@ public class echoARHandler : MonoBehaviour
             {
                 // Get model names and ID
                 ModelHologram modelHologram = (ModelHologram)entry.getHologram();
-
-                List<string> filenames = new List<string>();
-                filenames.Add(modelHologram.getFilename());
-                if (modelHologram.getMaterialFilename() != null) filenames.Add(modelHologram.getMaterialFilename());
-                if (modelHologram.getTextureFilenames() != null) filenames.AddRange(modelHologram.getTextureFilenames());
-
-                List<string> fileStorageIDs = new List<string>();
-                fileStorageIDs.Add(modelHologram.getStorageID());
-                if (modelHologram.getMaterialStorageID() != null) fileStorageIDs.Add(modelHologram.getMaterialStorageID());
-                if (modelHologram.getTextureStorageIDs() != null) fileStorageIDs.AddRange(modelHologram.getTextureStorageIDs());
-
-                // Import Options
-                ImportOptions importOptions = ParseAdditionalData(entry.getAdditionalData());
-
-                // Instantiate model based on type
-                if (modelHologram.getFilename().EndsWith(".glb"))
+                Debug.Log(modelHologram.getFilename());
+                if (modelHologram.getFilename().Equals(loadModel))
                 {
-                    // Instantiate model without downloading it
-                    StartCoroutine(InstantiateModel(entry, filenames, importOptions));
+                    foreach (Transform child in this.transform)
+                    {
+                        GameObject.Destroy(child.gameObject);
+                    }
+                    List<string> filenames = new List<string>();
+                    filenames.Add(modelHologram.getFilename());
+                    if (modelHologram.getMaterialFilename() != null) filenames.Add(modelHologram.getMaterialFilename());
+                    if (modelHologram.getTextureFilenames() != null) filenames.AddRange(modelHologram.getTextureFilenames());
+
+                    List<string> fileStorageIDs = new List<string>();
+                    fileStorageIDs.Add(modelHologram.getStorageID());
+                    if (modelHologram.getMaterialStorageID() != null) fileStorageIDs.Add(modelHologram.getMaterialStorageID());
+                    if (modelHologram.getTextureStorageIDs() != null) fileStorageIDs.AddRange(modelHologram.getTextureStorageIDs());
+
+                    // Import Options
+                    ImportOptions importOptions = ParseAdditionalData(entry.getAdditionalData());
+
+                    // Instantiate model based on type
+                    if (modelHologram.getFilename().EndsWith(".glb"))
+                    {
+                        // Instantiate model without downloading it
+                        StartCoroutine(InstantiateModel(entry, filenames, importOptions));
+                    }
+                    else
+                    {
+                        // Download model files and then instantiate
+                        StartCoroutine(DownloadFiles(entry, serverURL, filenames, fileStorageIDs, importOptions));
+                    }
+                }
+            }
+        }
+    }
+
+    IEnumerator GetUserModel(string user)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Get("https://console.echoAR.xyz/get?key=" + APIKey + "&data=" + user))
+        {
+            // Request and wait for the desired page.
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.isNetworkError)
+            {
+                Debug.Log("Error: " + webRequest.error);
+                loadModel = "";
+            }
+            else
+            {
+                Debug.Log("Received: " + webRequest.downloadHandler.text);
+                if (webRequest.downloadHandler.text.Equals("Data not found"))
+                {
+                    loadModel = "";
                 }
                 else
                 {
-                    // Download model files and then instantiate
-                    StartCoroutine(DownloadFiles(entry, serverURL, filenames, fileStorageIDs, importOptions));
+                    loadModel = webRequest.downloadHandler.text;
                 }
 
             }
         }
     }
 
+    IEnumerator SetUserModel(string user, string model)
+    {
+        using (UnityWebRequest webRequest = UnityWebRequest.Post("https://console.echoAR.xyz/get?key=" + APIKey + "&data=" + user + "&value=" + model, model))
+        {
+            // Request and wait for the desired page.
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.isNetworkError)
+            {
+                Debug.Log("Error: " + webRequest.error);
+                loadModel = "";
+            }
+            else
+            {
+                Debug.Log("Received: " + webRequest.downloadHandler.text);
+                loadModel = webRequest.downloadHandler.text;
+            }
+        }
+    }
     ImportOptions ParseAdditionalData(Dictionary<string, string> additionalData)
     {
         ImportOptions importOptions = new ImportOptions();
