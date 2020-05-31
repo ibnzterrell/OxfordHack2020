@@ -380,7 +380,7 @@ public class echoARHandler : MonoBehaviour
 
     IEnumerator SetUserModel(string user, string model)
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Post("https://console.echoAR.xyz/get?key=" + APIKey + "&data=" + user + "&value=" + model, model))
+        using (UnityWebRequest webRequest = UnityWebRequest.Post("https://console.echoAR.xyz/post?key=" + APIKey + "&data=" + user + "&value=" + model, model))
         {
             // Request and wait for the desired page.
             yield return webRequest.SendWebRequest();
@@ -388,12 +388,10 @@ public class echoARHandler : MonoBehaviour
             if (webRequest.isNetworkError)
             {
                 Debug.Log("Error: " + webRequest.error);
-                loadModel = "";
             }
             else
             {
                 Debug.Log("Received: " + webRequest.downloadHandler.text);
-                loadModel = webRequest.downloadHandler.text;
             }
         }
     }
