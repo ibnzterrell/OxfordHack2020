@@ -11,6 +11,7 @@ public class UIHandler : MonoBehaviour
     public Button scanButton;
     public Button loginButton;
     public Button placeButton;
+    public echoARHandler echoARInstance;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,7 +33,8 @@ public class UIHandler : MonoBehaviour
 
     void loginClick()
     {
-
+        Debug.Log("Login pressed");
+        echoARInstance.load();
     }
 
     void placeClick()
