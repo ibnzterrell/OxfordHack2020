@@ -8,6 +8,9 @@ public class CloudRecoEventHandler : MonoBehaviour
     private bool mIsScanning = false;
     private string mTargetMetadata = "";
     private string mTargetName = "";
+
+    public UIHandler uIHandler;
+
     // Register cloud reco callbacks
     void Awake()
     {
@@ -60,6 +63,7 @@ public class CloudRecoEventHandler : MonoBehaviour
 
         mTargetName = targetSearchResult.TargetName;
         Debug.Log("Target: " + mTargetName);
+
         TargetFinder.CloudRecoSearchResult cloudRecoSearchResult =
             (TargetFinder.CloudRecoSearchResult)targetSearchResult;
         // do something with the target metadata
@@ -82,6 +86,17 @@ public class CloudRecoEventHandler : MonoBehaviour
             // enable the new result with the same ImageTargetBehaviour: 
             ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
             tracker.GetTargetFinder<ImageTargetFinder>().EnableTracking(targetSearchResult, ImageTargetTemplate.gameObject);
+        }
+
+        uIHandler.updateTarget(mTargetName);
+    }
+
+    public void startScanning()
+    {
+        if (!mIsScanning)
+        {
+            // Restart TargetFinder
+            mCloudRecoBehaviour.CloudRecoEnabled = true;
         }
     }
 }
