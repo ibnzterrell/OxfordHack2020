@@ -11,6 +11,7 @@ public class AutoFocus : MonoBehaviour
         var vuforia = VuforiaARController.Instance;
         vuforia.RegisterVuforiaStartedCallback(OnVuforiaStarted);
         vuforia.RegisterOnPauseCallback(OnPaused);
+        Debug.Log("Start auto focus");
     }
 
     private void OnVuforiaStarted()

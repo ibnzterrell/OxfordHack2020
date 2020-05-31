@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Vuforia;
 
-public class CloudRecoEventHandler : MonoBehaviour, IObjectRecoEventHandler
+public class CloudRecoEventHandler : MonoBehaviour
 {
     public ImageTargetBehaviour ImageTargetTemplate;
     private CloudRecoBehaviour mCloudRecoBehaviour;
@@ -12,18 +12,20 @@ public class CloudRecoEventHandler : MonoBehaviour, IObjectRecoEventHandler
     void Awake()
     {
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
-        if (mCloudRecoBehaviour)
-        {
-            mCloudRecoBehaviour.RegisterEventHandler(this);
-        }
+        mCloudRecoBehaviour.RegisterOnInitializedEventHandler(OnInitialized);
+        mCloudRecoBehaviour.RegisterOnInitErrorEventHandler(OnInitError);
+        mCloudRecoBehaviour.RegisterOnUpdateErrorEventHandler(OnUpdateError);
+        mCloudRecoBehaviour.RegisterOnStateChangedEventHandler(OnStateChanged);
+        mCloudRecoBehaviour.RegisterOnNewSearchResultEventHandler(OnNewSearchResult);
     }
     //Unregister cloud reco callbacks when the handler is destroyed
     void OnDestroy()
     {
-        if (mCloudRecoBehaviour)
-        {
-            mCloudRecoBehaviour.UnregisterEventHandler(this);
-        }
+        mCloudRecoBehaviour.UnregisterOnInitializedEventHandler(OnInitialized);
+        mCloudRecoBehaviour.UnregisterOnInitErrorEventHandler(OnInitError);
+        mCloudRecoBehaviour.UnregisterOnUpdateErrorEventHandler(OnUpdateError);
+        mCloudRecoBehaviour.UnregisterOnStateChangedEventHandler(OnStateChanged);
+        mCloudRecoBehaviour.UnregisterOnNewSearchResultEventHandler(OnNewSearchResult);
     }
 
     public void OnInitialized(TargetFinder targetFinder)
@@ -54,11 +56,20 @@ public class CloudRecoEventHandler : MonoBehaviour, IObjectRecoEventHandler
     // Here we handle a cloud target recognition event
     public void OnNewSearchResult(TargetFinder.TargetSearchResult targetSearchResult)
     {
-        Debug.Log("Search Result Found!");
-        TargetFinder.CloudRecoSearchResult cloudRecoSearchResult =
-            (TargetFinder.CloudRecoSearchResult)targetSearchResult;
+        Debug.Log("New Search Result Found!");
+        // TargetFinder.CloudRecoSearchResult cloudRecoSearchResult =
+        //     (TargetFinder.CloudRecoSearchResult)targetSearchResult;
         // do something with the target metadata
-        mTargetMetadata = cloudRecoSearchResult.MetaData;
+        // mTargetMetadata = cloudRecoSearchResult.MetaData;
+        // if (mTargetMetadata != null)
+        // {
+        //     Debug.Log("Cloud Search Metadata: " + mTargetMetadata);
+        // }
+        // else
+        // {
+        //     Debug.Log("No Cloud Search Metadata");
+        // }
+
         // stop the target finder (i.e. stop scanning the cloud)
         mCloudRecoBehaviour.CloudRecoEnabled = false;
 
