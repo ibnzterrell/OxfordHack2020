@@ -7,7 +7,7 @@ public class CloudRecoEventHandler : MonoBehaviour
     private CloudRecoBehaviour mCloudRecoBehaviour;
     private bool mIsScanning = false;
     private string mTargetMetadata = "";
-
+    private string mTargetName = "";
     // Register cloud reco callbacks
     void Awake()
     {
@@ -57,18 +57,21 @@ public class CloudRecoEventHandler : MonoBehaviour
     public void OnNewSearchResult(TargetFinder.TargetSearchResult targetSearchResult)
     {
         Debug.Log("New Search Result Found!");
-        // TargetFinder.CloudRecoSearchResult cloudRecoSearchResult =
-        //     (TargetFinder.CloudRecoSearchResult)targetSearchResult;
+
+        mTargetName = targetSearchResult.TargetName;
+        Debug.Log("Target: " + mTargetName);
+        TargetFinder.CloudRecoSearchResult cloudRecoSearchResult =
+            (TargetFinder.CloudRecoSearchResult)targetSearchResult;
         // do something with the target metadata
-        // mTargetMetadata = cloudRecoSearchResult.MetaData;
-        // if (mTargetMetadata != null)
-        // {
-        //     Debug.Log("Cloud Search Metadata: " + mTargetMetadata);
-        // }
-        // else
-        // {
-        //     Debug.Log("No Cloud Search Metadata");
-        // }
+        mTargetMetadata = cloudRecoSearchResult.MetaData;
+        if (mTargetMetadata != null)
+        {
+            Debug.Log("Cloud Search Metadata: " + mTargetMetadata);
+        }
+        else
+        {
+            Debug.Log("No Cloud Search Metadata");
+        }
 
         // stop the target finder (i.e. stop scanning the cloud)
         mCloudRecoBehaviour.CloudRecoEnabled = false;
@@ -79,24 +82,6 @@ public class CloudRecoEventHandler : MonoBehaviour
             // enable the new result with the same ImageTargetBehaviour: 
             ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
             tracker.GetTargetFinder<ImageTargetFinder>().EnableTracking(targetSearchResult, ImageTargetTemplate.gameObject);
-        }
-    }
-
-    void OnGUI()
-    {
-        // Display current 'scanning' status
-        GUI.Box(new Rect(100, 100, 200, 50), mIsScanning ? "Scanning" : "Not scanning");
-        // Display metadata of latest detected cloud-target
-        GUI.Box(new Rect(100, 200, 200, 50), "Metadata: " + mTargetMetadata);
-        // If not scanning, show button
-        // so that user can restart cloud scanning
-        if (!mIsScanning)
-        {
-            if (GUI.Button(new Rect(100, 300, 200, 50), "Restart Scanning"))
-            {
-                // Restart TargetFinder
-                mCloudRecoBehaviour.CloudRecoEnabled = true;
-            }
         }
     }
 }
